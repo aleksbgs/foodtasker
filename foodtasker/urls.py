@@ -46,5 +46,13 @@ urlpatterns = [
     url(r'api/customer/order/add/$',apis.customer_add_order),
     url(r'api/customer/order/latest/$',apis.customer_get_latest_order),
 
+    #Api for drivers
+    url(r'^api/driver/orders/ready/$',apis.driver_get_ready_orders),
+    url(r'^api/driver/order/pick/$',apis.driver_pick_order),
+    url(r'^api/driver/order/latest/$',apis.driver_latest_order),
+    url(r'^api/driver/order/complete/$',apis.driver_complete_order),
+    url(r'^api/driver/orders/revenue/$',apis.driver_get_revenue),
+
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

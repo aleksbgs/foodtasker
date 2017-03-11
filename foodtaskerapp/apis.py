@@ -5,7 +5,9 @@ from foodtaskerapp.models import Restaurant,Meal,Order,OrderDetails,Driver
 from foodtaskerapp.serializers import  RestaurantSerializer,MealSerializer,OrderSerializer
 from oauth2_provider.models import AccessToken
 from django.views.decorators.csrf import csrf_exempt
-
+############
+#CUSTOMERS
+############
 
 def customer_get_restaurants(request):
     restaurants = RestaurantSerializer(
@@ -96,7 +98,65 @@ def customer_get_latest_order(request):
 
     return JsonResponse({"order":order})
 
+#######
 
+#RESTAURANT
+
+#######
 def restaurant_order_notification(request,last_request_time):
     notification = Order.objects.filter(restaurant= request.user.restaurant,created_at__gt=last_request_time).count()
     return JsonResponse({"notification":notification})
+
+#######
+
+#DRIVER
+
+#######
+
+def driver_get_ready_orders(request):
+    orders = OrderSerializer(
+        Order.objects.filter(status=Order.READY,driver=None).order_by("-id"),
+        many=True
+    ).data
+
+
+
+    return JsonResponse({"orders":orders})
+
+@csrf_exempt
+#Post params: access token,order_id
+def driver_pick_order(request):
+
+    if request.method == "POST":
+        #get tokent
+        access_token = AccessToken.objects.get(token=request.POST.get("access_token"), expires__gt=timezone.now())
+        #get driver
+        driver = access_token.user.driver
+
+        #check if driver can only pick one order at the same time
+        if Order.objects.filter(driver=driver).exclude(status=Order.ONTHEWAY):
+            return JsonResponse({"status":"failed","error":"You can only pick one order"})
+        try:
+            order = Order.objects.get(
+                id = request.POST["order_id"],
+                driver = None,
+                status = Order.READY
+            )
+            order.driver = driver
+            order.status = Order.ONTHEWAY
+            order.picked_at = timezone.now()
+            order.save()
+            return JsonResponse({"status":"success"})
+        except Order.DoesNotExist:
+            return JsonResponse({"status":"failed","error":"this order has been picked up by another"})
+
+    return JsonResponse({})
+
+def driver_latest_order(request):
+    return JsonResponse({})
+
+def driver_complete_order(request):
+    return JsonResponse({})
+
+def driver_get_revenue(request):
+    return JsonResponse({})
