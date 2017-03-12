@@ -200,3 +200,28 @@ def driver_get_revenue(request):
         revenue[day.strftime("%a")] = sum(order.total for order in orders)
 
     return JsonResponse({"revenue":revenue})
+#Post - params :access_token,"lat,lng"
+@csrf_exempt
+def driver_update_location(request):
+
+    if request.method == "POST":
+        access_token = AccessToken.objects.get(token=request.POST.get("access_token"), expires__gt=timezone.now())
+        # get driver
+        driver = access_token.user.driver
+
+        #Set location string
+        driver.location = request.POST["location"]
+        driver.save()
+
+
+    return JsonResponse({"status":"success"})
+
+
+def customer_driver_location(request):
+    access_token = AccessToken.objects.get(token=request.GET.get("access_token"), expires__gt=timezone.now())
+    # get driver
+    customer = access_token.user.customer
+    current_order = Order.objects.filter(customer=customer,status=Order.ONTHEWAY).last()
+    location = current_order.driver.location
+
+    return JsonResponse({"location":location})
