@@ -160,4 +160,4 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-STRIPE_API_KEY = 'test stripe account'
+STRIPE_API_KEY = 'sk_test_YhPAu5gw7CuVB0S2d7dUovOd'
